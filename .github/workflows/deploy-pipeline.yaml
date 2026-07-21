@@ -40,16 +40,18 @@ jobs:
             cd function
             zip -r ../${{ github.sha }}.zip .
       - name: Archive artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: zipped-bundle
           path: ${{ github.sha }}.zip
           
   publish:
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - name: create release
-        uses: actions/create-realease@v1
+        id: create-release
+        uses: actions/create-release@v4
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
         with: 
@@ -58,6 +60,20 @@ jobs:
           body: New release for ${{ github.sha }}. Releases notes on the documentation site
           draft: false
           prerelease: false
+      - name: download artifact
+        uses: artifact/download-artifact@v4
+        with:
+          name: zipped-bundle
+      - name: upload released artifact
+        uses: actions/upload-release-asset@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: ./${{ github.sha }}.zip
+          asset_content_type: application/zip
+          
+        
 
 
 
