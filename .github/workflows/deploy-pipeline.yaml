@@ -1,6 +1,8 @@
 name: Deploy Lambda Function
 on: [push]
 
+permissions:
+  contents: write
 jobs:
 
   lint:
